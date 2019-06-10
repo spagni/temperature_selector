@@ -68,7 +68,7 @@ class _CircleSelectorState extends State<CircleSelector>
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 80.0,
+      height: 80,
       child: Stack(
         children: <Widget>[
           Positioned(
@@ -88,8 +88,8 @@ class _CircleSelectorState extends State<CircleSelector>
                   child: Center(
                     child: Container(
                       width: MediaQuery.of(context).size.width,
-                      height: 1.0,
-                      color: Styles.blue,
+                      height: 3.0,
+                      color: Styles.darkBlue,
                     ),
                   ),
                 ),
@@ -112,11 +112,10 @@ class _CircleSelectorState extends State<CircleSelector>
               child: GestureDetector(
                 onHorizontalDragUpdate: _onHorizontalDragUpdate,
                 child: Container(
-                  // margin: EdgeInsets.all(4.0),
                   height: _selectorSize,
                   width: _selectorSize,
                   decoration: BoxDecoration(
-                    color: Styles.lightlue,
+                    color: Styles.darkBlue,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(Icons.code, size: 40.0, color: Colors.white),
@@ -162,5 +161,38 @@ class _CircleSelectorState extends State<CircleSelector>
       _animateToOffset,
       _controller.value,
     );
+  }
+}
+
+class MyCustomPainter extends CustomPainter {
+  final double position;
+
+  MyCustomPainter({
+    this.position,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint paint = Paint()..color = Styles.darkBlue;
+    Path path = Path();
+
+    double maxHeight = size.height / 2;
+    path.lineTo(0.0, maxHeight);
+    path.lineTo(size.width / 2 - 70.0, maxHeight);
+    path.quadraticBezierTo(size.width / 2 - 60.0, maxHeight,
+        size.width / 2 - 50.0, maxHeight - 10.0);
+    path.quadraticBezierTo(
+        size.width / 2, -20.0, size.width / 2 + 60.0, maxHeight - 10.0);
+    path.quadraticBezierTo(
+        size.width / 2 + 70, maxHeight, size.width / 2 + 80.0, maxHeight);
+    path.lineTo(size.width, maxHeight);
+    path.lineTo(size.width, 0.0);
+    path.close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return oldDelegate != this;
   }
 }
