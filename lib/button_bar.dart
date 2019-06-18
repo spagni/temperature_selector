@@ -1,17 +1,34 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 
 class CustomButtonBar extends StatefulWidget {
   @override
   _CustomButtonBarState createState() => _CustomButtonBarState();
 }
 
-class _CustomButtonBarState extends State<CustomButtonBar> {
+class _CustomButtonBarState extends State<CustomButtonBar>
+    with SingleTickerProviderStateMixin {
+  AnimationController _controller;
+  Animation<double> _alignAnim;
   int _currentIndex;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = 2;
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 300),
+    );
+
+    _alignAnim = _controller;
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -34,27 +51,35 @@ class _CustomButtonBarState extends State<CustomButtonBar> {
                   _buildIconButton(Icons.pages, 1),
                   _buildIconButton(Icons.offline_bolt, 2),
                   _buildIconButton(Icons.radio, 3),
-                  _buildIconButton(Icons.edit,  4),
+                  _buildIconButton(Icons.edit, 4),
                 ],
               ),
               Flex(
                 direction: Axis.horizontal,
                 children: <Widget>[
-                  Container(
-                    width: MediaQuery.of(context).size.width,
-                    child: AnimatedContainer(
-                      alignment: Alignment(_getAlignment(), 0.0),
-                      duration: Duration(milliseconds: 300),
-                      child: AnimatedContainer(
-                        duration: Duration(milliseconds: 300),
-                        height: 5.0,
-                        width: (MediaQuery.of(context).size.width) * .2,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20.0)
+                  AnimatedBuilder(
+                    animation: _alignAnim,
+                    builder: (BuildContext context, _) {
+                      double gauss = math
+                          .exp(-(math.pow((_controller.value - .5), 8) / .02));
+                      double width =
+                          (MediaQuery.of(context).size.width) * .25 * gauss;
+
+                      return SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: Container(
+                          alignment: Alignment(_alignAnim.value, 0.0),
+                          child: Container(
+                            height: 5.0,
+                            width: width,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(50.0),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -75,22 +100,34 @@ class _CustomButtonBarState extends State<CustomButtonBar> {
       onPressed: (_currentIndex == index)
           ? null
           : () {
+              _alignAnim = Tween(
+                      begin: _getAlignment(_currentIndex),
+                      end: _getAlignment(index))
+                  .animate(
+                CurvedAnimation(
+                  parent: _controller,
+                  curve: Curves.easeIn,
+                ),
+              );
+              _controller.reset();
+              _controller.forward();
+
               setState(() => _currentIndex = index);
             },
     );
   }
 
-  double _getAlignment() {
-    switch(_currentIndex) {
-      case 0: 
+  double _getAlignment(int index) {
+    switch (index) {
+      case 0:
         return -1.0;
-      case 1: 
+      case 1:
         return -0.5;
-      case 2: 
+      case 2:
         return 0.0;
-      case 3: 
+      case 3:
         return 0.5;
-      case 4: 
+      case 4:
         return 1.0;
       default:
         return 0.0;
